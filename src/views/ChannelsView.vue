@@ -1,16 +1,15 @@
 <template>
-  <ModalNotification :showModal = showModal @closeModal = "closeModal" @notificationsSent = "notificationsSent"/>
   <main>
     <div class="header">
-      <h3>Notifications</h3>
-      <button class="btn btn-primary" @click="showModal = true">
+      <h3>Channels / Notification Types</h3>
+      <!-- <button class="btn btn-primary" @click="showModal = true">
         <i class="pi pi-plus me-1"></i>
         New Notification
-      </button>
+      </button> -->
     </div>
     <div class="mt-3">
       <DataTable
-        :value="notifications"
+        :value="channels"
         responsiveLayout="scroll"
         :paginator="true"
         :alwaysShowPaginator="false"
@@ -40,11 +39,8 @@
           </div>
         </template>
         <Column field="id" header="ID" sortable></Column>
-        <Column field="notification_type.name" header="Channel" sortable></Column>
-        <Column field="category.name" header="Category" sortable></Column>
-        <Column field="user.name" header="User name" sortable></Column>
-        <Column field="message" header="Message" sortable></Column>
-        <Column header="Date" sortable>
+        <Column field="name" header="Notification Type" sortable></Column>
+        <Column header="Created At" sortable>
           <template #body="{ data }">
             {{ formatDate(data.created_at) }}
           </template></Column>
@@ -57,34 +53,21 @@
 import { onMounted, ref } from 'vue';
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import ModalNotification from '@/components/ModalNotification.vue';
 import { useDatatable } from '@/hooks/useDatatable';
-import { notificationService } from '@/services/notification.service';
-import { useToast } from 'primevue/usetoast';
+import { notificationTypeService } from '@/services/notificationType.service';
 
 export default {
-  components: { ModalNotification, DataTable, Column },
+  components: { DataTable, Column },
   setup() {
-    const notifications = ref([])
-    const showModal = ref(false);
+    const channels = ref([])
     const { numRows, filters } = useDatatable()
-    const toast = useToast()
     
     onMounted(() => {
-      fetchNotifications()
+      fetchNotificationTypes()
     })
 
-    const fetchNotifications = async () => {
-      notifications.value = await notificationService.fetchAll()
-    }
-
-    const notificationsSent = (notificationArray) => {
-      toast.add({ severity: 'success', summary: 'Notifications sent with success', life: 3000 })
-      notifications.value = [...notificationArray, ...notifications.value]
-    }
-
-    const closeModal = () => {
-      showModal.value = false
+    const fetchNotificationTypes = async () => {
+      channels.value = await notificationTypeService.fetchAll()
     }
 
     const formatDate = (date) => {
@@ -99,13 +82,11 @@ export default {
     }
 
     return {
-      closeModal,
       formatDate,
-      notificationsSent,
-      notifications,
-      showModal,
+      channels,
       numRows, filters
     }
   },
 }
+
 </script>
